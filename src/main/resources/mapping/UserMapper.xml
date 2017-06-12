@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.youbi.app.dao.UserDao">
+    <resultMap id="BaseResultMap" type="com.youbi.app.model.User">
+        <id column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="zhname" property="zhname" jdbcType="VARCHAR"/>
+        <result column="hash" property="hash" jdbcType="VARCHAR"/>
+        <result column="salt" property="salt" jdbcType="VARCHAR"/>
+        <result column="bade_number" property="badeNumber" jdbcType="VARCHAR"/>
+        <result column="duty" property="duty" jdbcType="VARCHAR"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="lastLoginTime" property="lastlogintime" jdbcType="TIMESTAMP"/>
+        <association property="unit" column="unit" select="com.youbi.app.dao.UnitDao.selectById"
+                     javaType="com.youbi.app.model.Unit">
+        </association>
+        <association property="role" javaType="com.youbi.app.model.Role">
+            <id property="roleId" column="role_id"/>
+            <result property="roleName" column="role_name"/>
+            <result property="roleZhname" column="role_zhname"/>
+        </association>
+        <association property="adminUnit" column="admin_unit" select="com.youbi.app.dao.UnitDao.selectById"
+                     javaType="com.youbi.app.model.Unit">
+        </association>
+    </resultMap>
+    <select id="selectCount" resultType="Integer">
+        select count(*) from user WHERE unit is NOT NULL
+        <if test="unitId != 0">
+            and (unit in (select unit_id from unit where parent=#{unitId, jdbcType=INTEGER}) or unit =
+            #{unitId, jdbcType=INTEGER})
+        </if>
+        <if test="!''.equals(userName)">
+            and zhname LIKE '%${userName}%'
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="INTEGER">
+        SELECT * from user
+        left outer join unit on (user.unit=unit.unit_id)
+        left outer join role on (user.role=role.role_id)
+        left outer join unit as gg on (user.admin_unit = gg.unit_id)
+        where user_id = #{userId, jdbcType=INTEGER}
+    </select>
+    <select id="selectByUserName" resultMap="BaseResultMap" parameterType="String">
+         select user_id, user_name,salt, hash, role, role.role_name, admin_unit, unit.unit_id, unit.unit_name, unit.unit_level, unit.parent from user
+         left outer join role  on (user.role=role.role_id)
+         left outer join unit  on (user.admin_unit = unit.unit_id)
+         where user_name=#{userName, jdbcType=VARCHAR}
+    </select>
+    <select id="selectList" resultMap="BaseResultMap">
+        select user_id, user_name, zhname, unit, unit.unit_name, bade_number, mobile, duty from user
+        left outer JOIN unit on (user.unit=unit.unit_id)
+        where unit is not null
+        <if test="unitId != 0">
+            and (unit in (select unit_id from unit where parent=#{unitId, jdbcType=INTEGER}) or unit =
+            #{unitId, jdbcType=INTEGER})
+        </if>
+        <if test="!''.equals(userName)">
+            and zhname LIKE '%${userName}%'
+        </if>
+        order by
+        <if test="orderName==1">
+            user_name
+        </if>
+        <if test="orderName==2">
+        unit
+        </if>
+        <if test="orderStatus==2">
+            desc
+        </if>
+        limit #{start, jdbcType=INTEGER}, #{pageSize, jdbcType=INTEGER}
+    </select>
+    <select id="selectAuthList" resultMap="BaseResultMap">
+        select user_id, zhname, unit, p.unit_name, admin_unit, a.unit_name, role, role.role_zhname, duty from user
+        left outer join unit p on (user.unit = p.unit_id)
+        left outer join unit a on (user.admin_unit = a.unit_id )
+        left outer join role on (user.role = role.role_id)where unit is not null
+        <if test="unitId != 0">
+          and (unit in (select unit_id from unit where parent=#{unitId, jdbcType=INTEGER}) or unit = #{unitId, jdbcType=INTEGER})
+        </if>
+        <if test="!''.equals(userName)">
+            and zhname like '%${userName}%'
+        </if>
+        order BY
+        <if test="orderName==1">
+          user_name
+        </if>
+        <if test="orderName==2">
+            unit
+        </if>
+        <if test="orderStatus==2">
+            desc
+        </if>
+        limit #{start, jdbcType=INTEGER}, #{pageSize, jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from user
+    where user_id = #{userId,jdbcType=INTEGER}
+  </delete>
+    <insert id="insertSelective" parameterType="com.youbi.app.model.User">
+        insert into user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="userName != null">
+                user_name,
+            </if>
+            <if test="zhname != null">
+                zhname,
+            </if>
+            <if test="hash != null">
+                hash,
+            </if>
+            <if test="salt != null">
+                salt,
+            </if>
+            <if test="badeNumber != null">
+                bade_number,
+            </if>
+            <if test="duty != null">
+                duty,
+            </if>
+            <if test="mobile != null">
+                mobile,
+            </if>
+            <if test="unit != null">
+                unit,
+            </if>
+            <if test="role != null">
+                role,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="userName != null">
+                #{userName,jdbcType=VARCHAR},
+            </if>
+            <if test="zhname != null">
+                #{zhname,jdbcType=VARCHAR},
+            </if>
+            <if test="hash != null">
+                #{hash,jdbcType=VARCHAR},
+            </if>
+            <if test="salt != null">
+                #{salt,jdbcType=VARCHAR},
+            </if>
+            <if test="badeNumber != null">
+                #{badeNumber,jdbcType=VARCHAR},
+            </if>
+            <if test="duty != null">
+                #{duty,jdbcType=VARCHAR},
+            </if>
+            <if test="mobile != null">
+                #{mobile,jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                #{unit.unitId,jdbcType=INTEGER},
+            </if>
+            <if test="role != null">
+                #{role.roleId,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.youbi.app.model.User">
+    update user
+    <set>
+    <if test="userName != null">
+    user_name = #{userName,jdbcType=VARCHAR},
+    </if>
+    <if test="zhname != null">
+    zhname = #{zhname,jdbcType=VARCHAR},
+    </if>
+    <if test="hash != null">
+    hash = #{hash,jdbcType=VARCHAR},
+    </if>
+    <if test="salt != null">
+    salt = #{salt,jdbcType=VARCHAR},
+    </if>
+    <if test="badeNumber != null">
+    bade_number = #{badeNumber,jdbcType=VARCHAR},
+    </if>
+    <if test="duty != null">
+    duty = #{duty,jdbcType=VARCHAR},
+    </if>
+    <if test="mobile != null">
+    mobile = #{mobile,jdbcType=VARCHAR},
+    </if>
+    <if test="unit != null">
+    unit = #{unit.unitId,jdbcType=INTEGER},
+    </if>
+    <if test="role != null">
+    role = #{role.roleId,jdbcType=INTEGER},
+    </if>
+    <if test="adminUnit != null">
+    admin_unit = #{adminUnit.unitId,jdbcType=INTEGER},
+    </if>
+    <if test="lastlogintime != null">
+    lastLoginTime = #{lastlogintime,jdbcType=TIMESTAMP},
+    </if>
+    </set>
+    where user_id = #{userId,jdbcType=INTEGER}
+    </update>
+</mapper>

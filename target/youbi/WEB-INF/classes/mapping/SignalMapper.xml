@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.youbi.app.dao.SignalDao" >
+  <resultMap id="BaseResultMap" type="com.youbi.app.model.Signal" >
+    <id column="signal_id" property="signalId" jdbcType="INTEGER" />
+    <result column="type_id" property="typeId" jdbcType="INTEGER"/>
+    <result column="signal_long" property="signalLong" jdbcType="REAL" />
+    <result column="signal_lat" property="signalLat" jdbcType="REAL" />
+    <result column="is_damaged" property="isDamaged" jdbcType="TINYINT" />
+    <result column="is_used" property="isUsed" jdbcType="TINYINT" />
+    <result column="is_confirmed" property="isConfirmed" jdbcType="TINYINT"/>
+    <result column="create_time" property="createTime" jdbcType="DATE" />
+    <result column="description" property="description" jdbcType="VARCHAR"/>
+    <association property="signalType" javaType="com.youbi.app.model.SignalType">
+      <id column="signal_type_id" property="signalTypeId"/>
+      <result column="signal_type_name" property="signalTypeName"/>
+    </association>
+    <association property="unit" javaType="com.youbi.app.model.Unit">
+      <id column="unit_id" property="unitId"/>
+      <result column="unit_name" property="unitName"/>
+    </association>
+    <association property="user" javaType="com.youbi.app.model.User">
+      <id column="user_id" property="userId"/>
+      <result column="zhname" property="zhname"/>
+    </association>
+    <association property="county" javaType="com.youbi.app.model.County">
+      <id column="Id" property="id"/>
+      <result column="Name" property="name"/>
+    </association>
+    <association property="roadway" javaType="com.youbi.app.model.Roadway">
+      <id column="road_id" property="roadId"/>
+      <result column="road_name" property="roadName"/>
+    </association>
+  </resultMap>
+  <resultMap id="MarkerMap" type="com.youbi.app.core.vo.Marker">
+      <id column="signal_id" property="id"/>
+    <result column="signal_type" property="type"/>
+    <result column="signal_long" property="lon"/>
+    <result column="signal_lat" property="lat"/>
+    <result column="is_damaged" property="isDamaged"/>
+  </resultMap>
+  <select id="selectList" resultMap="BaseResultMap">
+        select signal_id, signal_type_id,signal_type_name, a.unit_id, a.unit_name, b.user_id, b.zhname, signal_long,
+      signal_lat, gg.Id, gg.Name, d.road_id, d.road_name, is_damaged, is_used, is_confirmed, description,create_time  from signals
+      left outer JOIN signal_type on (signals.signal_type = signal_type.signal_type_id)
+      left outer JOIN unit as a on (signals.unit_id = a.unit_id)
+      left outer JOIN user as b on (signals.user_id = b.user_id)
+      left outer join china as gg on(signals.county_id = gg.Id)
+      left OUTER join roadway as d on (signals.road_id = d.road_id)
+      where 1=1
+      <if test="isUsed != 0">
+        and is_used = #{isUsed, jdbcType=TINYINT}
+      </if>
+      <if test="signalTypeId != 0">
+        and signal_type_id = #{signalTypeId, jdbcType=INTEGER}
+      </if>
+      <if test="countyId !=0">
+        and Id = #{countyId, jdbcType=INTEGER}
+      </if>
+    <if test="unitId != 0">
+      and unit_id = #{unitId, jdbcType=INTEGER}
+    </if>
+    <if test="roadId != 0">
+      and road_id=#{roadId, jdbcType=INTEGER}
+    </if>
+    <if test="beginTime != null">
+      and create_time &gt;= #{beginTime, jdbcType=DATE}
+    </if>
+    <if test="endTime != null">
+      and create_time $lt;= #{endTime, jdbcType=DATE}
+    </if>
+    <if test="isDamaged == true">
+      and is_damaged = 1
+    </if>
+    <if test="isConfirmed != 0">
+      and is_confirmed = #{isConfirmed, jdbcType=TINYINT}
+    </if>
+    order by create_time
+    <if test="orderStatus == true">
+      DESC
+    </if>
+    limit #{start, jdbcType=INTEGER}, #{size, jdbcType=INTEGER}
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select signal_id, signal_type_id,signal_type_name, a.unit_id, a.unit_name, b.user_id, b.zhname, signal_long,
+      signal_lat, gg.Id, gg.Name, d.road_id, d.road_name, is_damaged, is_used,description, date_format(create_time, '%Y-%m-%d')  from signals
+      left outer JOIN signal_type on (signals.signal_type = signal_type.signal_type_id)
+      left outer JOIN unit as a on (signals.unit_id = a.unit_id)
+      left outer JOIN user as b on (signals.user_id = b.user_id)
+      left outer join china as gg on(signals.county_id = gg.Id)
+      left OUTER join roadway as d on (signals.road_id = d.road_id)
+      where signal_id = #{signalId, jdbcType=INTEGER}
+  </select>
+  <select id="selectMarkers" resultMap="MarkerMap">
+    select signal_id, signal_type_id,signal_long,
+    signal_lat, is_damaged, is_used, is_confirmed from signals
+    where 1=1
+    <if test="isUsed != 0">
+      and is_used = #{isUsed, jdbcType=TINYINT}
+    </if>
+    <if test="signalTypeId != 0">
+      and signal_type_id = #{signalTypeId, jdbcType=INTEGER}
+    </if>
+    <if test="countyId !=0">
+      and Id = #{countyId, jdbcType=INTEGER}
+    </if>
+    <if test="unitId != 0">
+      and unit_id = #{unitId, jdbcType=INTEGER}
+    </if>
+    <if test="roadId != 0">
+      and road_id=#{roadId, jdbcType=INTEGER}
+    </if>
+    <if test="beginTime != null">
+      and create_time &gt;= #{beginTime, jdbcType=DATE}
+    </if>
+    <if test="endTime != null">
+      and create_time $lt;= #{endTime, jdbcType=DATE}
+    </if>
+    <if test="isDamaged == true">
+      and is_damaged = 1
+    </if>
+    <if test="isConfirmed != 0">
+      and is_confirmed = #{isConfirmed, jdbcType=TINYINT}
+    </if>
+  </select>
+  <select id="selectCount" resultType="Integer">
+    select count(*) from signals where is_used = #{isUsed, jdbcType=TINYINT}
+    <if test="signalTypeId != 0">
+      and signal_type_id = #{signalTypeId, jdbcType=INTEGER}
+    </if>
+    <if test="countyId !=0">
+      and Id = #{countyId, jdbcType=INTEGER}
+    </if>
+    <if test="unitId != 0">
+      and unit_id = #{unitId, jdbcType=INTEGER}
+    </if>
+    <if test="roadId != 0">
+      and road_id=#{roadId, jdbcType=INTEGER}
+    </if>
+    <if test="beginTime != null">
+      and create_time &gt;= #{beginTime, jdbcType=DATE}
+    </if>
+    <if test="endTime != null">
+      and create_time $lt;= #{endTime, jdbcType=DATE}
+    </if>
+    <if test="isDamaged == true">
+      and is_damaged = 1;
+    </if>
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from signals
+    where signal_id = #{signalId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insertSelective" parameterType="com.youbi.app.model.Signal" >
+    insert into signals
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="typeId != null" >
+        type_id,
+      </if>
+      <if test="signalType != null">
+        signal_type,
+      </if>
+      <if test="unit != null" >
+        unit_id,
+      </if>
+      <if test="user != null" >
+        user_id,
+      </if>
+      <if test="signalLong != null" >
+        signal_long,
+      </if>
+      <if test="signalLat != null" >
+        signal_lat,
+      </if>
+      <if test="county != null" >
+        county_id,
+      </if>
+      <if test="roadway != null" >
+        road_id,
+      </if>
+      <if test="isDamaged != null" >
+        is_damaged,
+      </if>
+      <if test="isUsed != null" >
+        is_used,
+      </if>
+      <if test="isConfirmed != null">
+        is_confirmed,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="typeId != null" >
+        #{typeId,jdbcType=INTEGER},
+      </if>
+      <if test="signalType != null">
+        #{signalType.signalTypeId, jdbcType=INTEGER},
+      </if>
+      <if test="unit != null" >
+        #{unit.unitId,jdbcType=INTEGER},
+      </if>
+      <if test="user != null" >
+        #{user.userId,jdbcType=INTEGER},
+      </if>
+      <if test="signalLong != null" >
+        #{signalLong,jdbcType=REAL},
+      </if>
+      <if test="signalLat != null" >
+        #{signalLat,jdbcType=REAL},
+      </if>
+      <if test="county != null" >
+        #{county.id,jdbcType=INTEGER},
+      </if>
+      <if test="roadway != null" >
+        #{roadway.roadId,jdbcType=INTEGER},
+      </if>
+      <if test="isDamaged != null" >
+        #{isDamaged,jdbcType=TINYINT},
+      </if>
+      <if test="isUsed != null" >
+        #{isUsed,jdbcType=TINYINT},
+      </if>
+      <if test="isConfirmed!=null">
+        #{isConfirmed, jdbcType=TINYINT},
+      </if>
+      <if test="description != null">
+        #{description, jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.youbi.app.model.Signal" >
+    update signals
+    <set >
+      <if test="signalType != null">
+        signal_type = #{signalType.signalTypeId, jdbcType=INTEGER},
+      </if>
+      <if test="unit != null" >
+        unit_id = #{unit.unitId,jdbcType=INTEGER},
+      </if>
+      <if test="user != null" >
+        user_id = #{user.userId,jdbcType=INTEGER},
+      </if>
+      <if test="signalLong != null" >
+        signal_long = #{signalLong,jdbcType=REAL},
+      </if>
+      <if test="signalLat != null" >
+        signal_lat = #{signalLat,jdbcType=REAL},
+      </if>
+      <if test="county != null" >
+        county_id = #{county.id,jdbcType=INTEGER},
+      </if>
+      <if test="roadway != null" >
+        road_id = #{roadway.roadId,jdbcType=INTEGER},
+      </if>
+      <if test="isDamaged != null" >
+        is_damaged = #{isDamaged,jdbcType=TINYINT},
+      </if>
+      <if test="isUsed != null" >
+        is_used = #{isUsed,jdbcType=TINYINT},
+      </if>
+      <if test="isConfirmed != null">
+        is_confirmed = #{isConfirmed, jdbcType=TINYINT},
+      </if>
+      <if test="description">
+        description = #{description, jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=DATE},
+      </if>
+    </set>
+    where signal_id = #{signalId,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.youbi.app.dao.IntersectionTypeDao" >
+  <resultMap id="BaseResultMap" type="com.youbi.app.model.IntersectionType" >
+    <id column="intersection_type_id" property="intersectionTypeId" jdbcType="TINYINT" />
+    <result column="intersection_type_name" property="intersectionTypeName" jdbcType="VARCHAR" />
+  </resultMap>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select * FROM intersection_type
+  </select>
+  <select id="selectType" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select * FROM intersection_type where intersection_type_id = #{intersectionTypeId, jdbcType=TINYINT}
+  </select>
+</mapper>

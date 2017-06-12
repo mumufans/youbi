@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.youbi.app.dao.IntersectionDao" >
+  <resultMap id="BaseResultMap" type="com.youbi.app.model.Intersection" >
+    <id column="intersection_id" property="intersectionId" jdbcType="INTEGER" />
+    <result column="intersection_name" property="intersectionName" jdbcType="VARCHAR" />
+    <result column="intersection_long" property="intersectionLong" jdbcType="REAL" />
+    <result column="intersection_lat" property="intersectionLat" jdbcType="REAL" />
+    <result column="is_damaged" property="isDamaged" jdbcType="TINYINT"/>
+    <result column="create_date" property="createDate" jdbcType="DATE" />
+    <association property="intersectionType" column="intersection_type_id" javaType="com.youbi.app.model.IntersectionType" select="com.youbi.app.dao.IntersectionTypeDao.selectType"/>
+    <association property="user" column="user_id" javaType="com.youbi.app.model.User" select="com.youbi.app.dao.UserDao.selectByPrimaryKey"/>
+    <association property="unit" column="unit_id" javaType="com.youbi.app.model.Unit" select="com.youbi.app.dao.UnitDao.selectById"/>
+    <!--<collection property="roadwayList" column="intersection_id" ofType="com.youbi.app.model.Roadway" select="com.youbi.app.dao.RoadwayDao.selectByIntersectionId"/>-->
+  </resultMap>
+  <!--<resultMap id="MapInfoMap" type="com.youbi.app.core.vo.MapMarker">-->
+    <!--<id column="intersection_id" property="id" jdbcType="INTEGER"/>-->
+    <!--<result column="category" property="category" jdbcType="TINYINT"/>-->
+    <!--<result column="intersection_type_id" property="typeId" jdbcType="TINYINT"/>-->
+    <!--<result column="intersection_long" property="lon" jdbcType="REAL"/>-->
+    <!--<result column="intersection_lat" property="lat" jdbcType="REAL"/>-->
+    <!--<result column="is_damaged" property="isDamaged" jdbcType="TINYINT"/>-->
+  <!--</resultMap>-->
+  <select id="selectList" resultMap="BaseResultMap">
+    SELECT intersection_id, intersection_name, intersection_long, intersection_lat, is_damaged, intersection_type_id,
+    user_id, unit_id FROM intersection where 1=1
+    <if test="!''.equals(intersectionName)">
+      and intersection_name LIKE '%${intersectionName}%'
+    </if>
+    <if test="unitId != 0">
+      and unit_id = #{unitId, jdbcType=INTEGER}
+    </if>
+    order by intersection_name
+    <if test="sortStatus==2">
+      desc
+    </if>
+  </select>
+  <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select * FROM intersection WHERE intersection_name=#{intersectionName , jdbcType=VARCHAR} limit 1
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select * from intersection where intersection_id = #{intersectionId, jdbcType=INTEGER}
+  </select>
+  <!--<select id="selectMapInfo" resultMap="MapInfoMap">-->
+    <!--SELECT intersection_id, category, intersection_type_id, intersection_long, intersection_lat, is_damaged-->
+    <!--FROM intersection-->
+  <!--</select>-->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from intersection
+    where intersection_id = #{intersectionId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insertSelective" parameterType="com.youbi.app.model.Intersection" >
+    insert into intersection
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="intersectionId != null" >
+        intersection_id,
+      </if>
+      <if test="intersectionName != null" >
+        intersection_name,
+      </if>
+      <if test="intersectionLong != null" >
+        intersection_long,
+      </if>
+      <if test="intersectionLat != null" >
+        intersection_lat,
+      </if>
+      <if test="user != null" >
+        user_id,
+      </if>
+      <if test="unit != null" >
+        unit_id,
+      </if>
+      <if test="intersectionType != null">
+        intersection_type_id,
+      </if>
+      <if test="isDamaged !=null">
+        is_damaged,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="intersectionId != null" >
+        #{intersectionId,jdbcType=INTEGER},
+      </if>
+      <if test="intersectionName != null" >
+        #{intersectionName,jdbcType=VARCHAR},
+      </if>
+      <if test="intersectionLong != null" >
+        #{intersectionLong,jdbcType=REAL},
+      </if>
+      <if test="intersectionLat != null" >
+        #{intersectionLat,jdbcType=REAL},
+      </if>
+      <if test="user != null" >
+        #{user.userId,jdbcType=INTEGER},
+      </if>
+      <if test="unit != null" >
+        #{unit.unitId,jdbcType=INTEGER},
+      </if>
+      <if test="intersectionType != null">
+          #{intersectionType.intersectionTypeId, jdbcType=INTEGER},
+      </if>
+      <if test="isDamaged !=null">
+        #{isDamaged, jdbcType=TINYINT},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.youbi.app.model.Intersection" >
+    update intersection
+    <set >
+      <if test="intersectionName != null" >
+        intersection_name = #{intersectionName,jdbcType=VARCHAR},
+      </if>
+      <if test="intersectionLong != null" >
+        intersection_long = #{intersectionLong,jdbcType=REAL},
+      </if>
+      <if test="intersectionLat != null" >
+        intersection_lat = #{intersectionLat,jdbcType=REAL},
+      </if>
+      <if test="user != null" >
+        user_id = #{user.userId,jdbcType=INTEGER},
+      </if>
+      <if test="unit != null" >
+        unit_id = #{unit.unitId,jdbcType=INTEGER},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=DATE},
+      </if>
+    </set>
+    where intersection_id = #{intersectionId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.youbi.app.model.Intersection" >
+    update intersection
+    set intersection_name = #{intersectionName,jdbcType=VARCHAR},
+      intersection_long = #{intersectionLong,jdbcType=REAL},
+      intersection_lat = #{intersectionLat,jdbcType=REAL},
+      user_id = #{userId,jdbcType=INTEGER},
+      unit_id = #{unitId,jdbcType=INTEGER},
+      create_date = #{createDate,jdbcType=DATE}
+    where intersection_id = #{intersectionId,jdbcType=INTEGER}
+  </update>
+</mapper>

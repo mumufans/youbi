@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.youbi.app.dao.IntersectRecordDao" >
+  <resultMap id="BaseResultMap" type="com.youbi.app.model.IntersectRecord" >
+    <id column="intersection_id" property="intersectionId" jdbcType="INTEGER" />
+    <id column="road_id" property="roadId" jdbcType="INTEGER" />
+  </resultMap>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="com.youbi.app.model.IntersectRecord">
+      select * from intersect_record WHERE 1=1
+      <if test="intersectionId!=null">
+        and intersection_id=#{intersectionId, jdbcType=INTEGER}
+      </if>
+    <if test="roadId!=null">
+      and road_id = #{roadId,jdbcType=INTEGER}
+    </if>
+  </select>
+  <select id="selectRecords" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+    select road_id from intersect_record WHERE intersection_id=#{intersectionId, jdbcType=INTEGER}
+  </select>
+  <delete id="delete" parameterType="java.lang.Integer">
+    delete FROM intersect_record WHERE intersection_id=#{intersectionId, jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByPrimaryKey" parameterType="com.youbi.app.model.IntersectRecord" >
+    delete from intersect_record
+    where intersection_id = #{intersectionId,jdbcType=INTEGER}
+      and road_id = #{roadId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.youbi.app.model.IntersectRecord" >
+    insert into intersect_record (intersection_id, road_id)
+    values (#{intersectionId,jdbcType=INTEGER}, #{roadId,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective">
+    insert into intersect_record(intersection_id, road_id) values(#{intersectionId, jdbcType=INTEGER}, #{roadId, jdbcType=INTEGER})
+  </insert>
+</mapper>
